@@ -31,12 +31,27 @@ drop policy if exists "public read projects" on public.projects;
 create policy "public read profile"  on public.site_profile for select using (true);
 create policy "public read projects" on public.projects     for select using (true);
 
--- Chỉ tài khoản của bạn được GHI (thêm / sửa / xoá)
+-- Chỉ quản trị viên được GHI (thêm / sửa / xoá). Quản trị viên nằm trong bảng site_admins.
+create table if not exists public.site_admins (
+  user_id uuid primary key references auth.users(id) on delete cascade
+);
+alter table public.site_admins enable row level security;
+
+create or replace function public.is_site_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.site_admins where user_id = auth.uid())
+$$;
+revoke all on function public.is_site_admin() from public;
+grant execute on function public.is_site_admin() to authenticated;
+
 drop policy if exists "owner write profile"  on public.site_profile;
 drop policy if exists "owner write projects" on public.projects;
 create policy "owner write profile"  on public.site_profile for all to authenticated
-  using ((auth.jwt() ->> 'email') = 'vnm03vnm@gmail.com')
-  with check ((auth.jwt() ->> 'email') = 'vnm03vnm@gmail.com');
+  using (public.is_site_admin()) with check (public.is_site_admin());
 create policy "owner write projects" on public.projects for all to authenticated
-  using ((auth.jwt() ->> 'email') = 'vnm03vnm@gmail.com')
-  with check ((auth.jwt() ->> 'email') = 'vnm03vnm@gmail.com');
+  using (public.is_site_admin()) with check (public.is_site_admin());
