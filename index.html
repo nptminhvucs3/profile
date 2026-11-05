@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+    <title>VuNhatMinh - Contact</title>
+    <meta
+      name="description"
+      content="Personal profile of Your Name — Backend Developer and technology enthusiast. Find my social links and contact details here."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#18243B" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="VuNhatMinh - Contact" />
+    <meta
+      property="og:description"
+      content="Exploring technology, building things and enjoying the journey."
+    />
+    <!-- Sau khi deploy, thêm: <meta property="og:url" content="https://<user>.github.io/<repo>/" />
+         và <meta property="og:image" content="https://<user>.github.io/<repo>/og-image.png" /> -->
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Áp dụng theme TRƯỚC khi React render để tránh flash sai theme -->
+    <script>
+      (function () {
+        // Cờ lấy từ file .env (VITE_THEME_TOGGLE). Tắt → luôn Dark, bỏ qua theme đã lưu/hệ điều hành.
+        var toggleEnabled = '%VITE_THEME_TOGGLE%' === 'true';
+        var theme = 'dark';
+        try {
+          if (toggleEnabled) {
+            var stored = localStorage.getItem('theme');
+            if (stored === 'light' || stored === 'dark') {
+              theme = stored;
+            } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+              theme = 'light';
+            }
+          }
+        } catch (e) {}
+        document.documentElement.setAttribute('data-theme', theme);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'light' ? '#DDE1F0' : '#18243B');
+      })();
+    </script>
+    <style>
+      html[data-theme='dark'] { background: #18243b; }
+      html[data-theme='light'] { background: #dde1f0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>This page needs JavaScript to run.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

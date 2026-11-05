@@ -1,0 +1,249 @@
+/* ==========================================================
+   THEME TOKENS — Soft Cosmic
+   Mọi màu của giao diện đều đi qua CSS Variables.
+   ========================================================== */
+
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Palette gốc */
+  --deep-navy: #18243b;
+  --muted-indigo: #293653;
+  --dusty-purple: #514b70;
+  --soft-blue: #8292b3;
+  --lavender-gray: #a5a4c2;
+  --moonlight: #d4d9e5;
+  --cloud-white: #f0f2f7;
+
+  /* Semantic */
+  --bg-fallback: #0f1830;
+  --text-strong: #f0f2f7;
+  --text: #d4d9e5;
+  --text-muted: #b0b8d2;
+  --text-faint: #98a5c6;
+  --eyebrow: #b3b2d0;
+
+  --accent: #8292b3;
+  --accent-2: #a5a4c2;
+
+  --surface: rgba(16, 26, 52, 0.68);
+  --surface-hover: rgba(40, 54, 96, 0.74);
+  --border: rgba(150, 165, 205, 0.32);
+  --border-hover: rgba(180, 180, 215, 0.66);
+  --glow: rgba(130, 146, 190, 0.34);
+
+  --ring: rgba(150, 165, 205, 0.78);
+  --ring-soft: rgba(150, 165, 205, 0.18);
+  --halo: rgba(150, 165, 205, 0.12);
+  --status: #8fc4ae;
+  --focus: #c5c9e6;
+
+  --toggle-bg: rgba(18, 28, 56, 0.6);
+
+  /* Biểu tượng tròn trong nút (gradient dịu, cùng tông bảng màu) */
+  --tone-a: linear-gradient(135deg, #8292b3, #514b70);
+  --tone-b: linear-gradient(135deg, #a5a4c2, #5a6a9a);
+  --tone-c: linear-gradient(135deg, #6f86b5, #6a5f94);
+  --tone-fg: #f0f2f7;
+
+  /* Lớp phủ nền: Dark Mode giữ nguyên ảnh gốc */
+  --veil: rgba(184, 192, 232, 0);
+  --scrim: rgba(8, 14, 32, 0.26);
+  --scrim-mobile: rgba(8, 14, 32, 0.34);
+  --text-shadow: 0 1px 14px rgba(6, 10, 24, 0.6);
+  --frame: rgba(165, 175, 215, 0.14);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-fallback: #dde1f0;
+  --text-strong: #18243b;
+  --text: #25324f;
+  --text-muted: #3e4d74;
+  --text-faint: #4d5b84;
+  --eyebrow: #54517f;
+
+  --accent: #5f6f9a;
+  --accent-2: #6b66a0;
+
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-hover: rgba(255, 255, 255, 0.92);
+  --border: rgba(80, 96, 140, 0.26);
+  --border-hover: rgba(98, 92, 160, 0.55);
+  --glow: rgba(104, 112, 180, 0.3);
+
+  --ring: rgba(95, 111, 154, 0.7);
+  --ring-soft: rgba(95, 111, 154, 0.16);
+  --halo: rgba(95, 111, 154, 0.12);
+  --status: #3f8a6c;
+  --focus: #3e3a86;
+
+  --toggle-bg: rgba(255, 255, 255, 0.7);
+
+  --tone-a: linear-gradient(135deg, #7f8fc4, #6a5f9e);
+  --tone-b: linear-gradient(135deg, #9a8fd0, #5f72b0);
+  --tone-c: linear-gradient(135deg, #7a92cc, #7d6fb0);
+  --tone-fg: #ffffff;
+
+  /* Light Mode: phủ sáng nhẹ lên cùng một ảnh Galaxy */
+  --veil: rgba(184, 192, 232, 1);
+  --scrim: rgba(236, 238, 250, 0.22);
+  --scrim-mobile: rgba(236, 238, 250, 0.16);
+  --text-shadow: none;
+  --frame: rgba(60, 60, 110, 0.18);
+}
+
+/* ==========================================================
+   GALAXY — Layer 1: ảnh nền Galaxy gốc + chuyển động tinh vân tự động
+   - Dùng đúng ảnh Galaxy gốc (src/assets/galaxy-bg.webp, 2880×1800), cover, không blur
+   - KHÔNG phụ thuộc chuột. Chỉ dùng transform/opacity (chạy trên GPU compositor,
+     không gây layout/paint mỗi frame) nên rất nhẹ.
+   - galaxy__drift: cả ảnh trôi/zoom cực chậm như camera (keyframes ở animations.css)
+   - galaxy__core: lõi sáng của đám mây xanh "thở" nhẹ (alpha thường, không blend-mode)
+   - Cố ý KHÔNG dùng mask / mix-blend-mode / filter trên lớp lớn: đó là những thứ làm giật
+     trên máy yếu (đã đo), nên nền chỉ có transform + opacity.
+   ========================================================== */
+
+.galaxy {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--bg-fallback);
+}
+
+/* Camera drift: scale ≥ 1.04 để biên ảnh không bao giờ lộ ra khi trôi */
+.galaxy__drift {
+  position: absolute;
+  inset: 0;
+  transform-origin: 60% 45%;
+  transform: scale(1.04);
+  will-change: transform;
+  animation: galaxy-drift 150s ease-in-out infinite alternate;
+}
+
+.galaxy__img {
+  position: absolute;
+  inset: 0;
+  background-image: url('../assets/galaxy-bg.webp');
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* Vùng sáng của nebula nằm bên phải → giữ nó trong khung, chừa cột chữ bên trái */
+  background-position: 62% 42%;
+}
+@media (max-width: 959px) {
+  .galaxy__img {
+    background-position: 72% 45%;
+  }
+}
+@media (max-width: 600px) {
+  .galaxy__img {
+    background-position: 76% 45%;
+  }
+}
+
+/* Lõi sáng của đám mây xanh bên phải "thở" rất chậm (chỉ opacity/transform).
+   Chỉ bật trên desktop, nơi vị trí đám mây ổn định theo background-position. */
+.galaxy__core {
+  display: none;
+}
+@media (min-width: 960px) {
+  .galaxy__core {
+    display: block;
+    position: absolute;
+    left: 56%;
+    top: 6%;
+    width: 36vw;
+    height: 52vh;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(150, 205, 255, 0.34), rgba(120, 160, 255, 0.12) 55%, transparent 100%);
+    opacity: 0.3;
+    will-change: opacity, transform;
+    animation: core-breathe 11s ease-in-out infinite alternate;
+  }
+}
+.perf-lite .galaxy__core {
+  display: none;
+}
+
+/* Chỉ đổi màu phủ khi chuyển theme (Dark = trong suốt hoàn toàn) */
+.galaxy__veil {
+  position: absolute;
+  inset: 0;
+  background-color: var(--veil);
+  /* screen: nâng vùng tối lên lavender nhưng giữ màu/chi tiết vùng sáng (Light Mode) */
+  mix-blend-mode: screen;
+  transition: background-color 0.6s ease;
+}
+
+/* Lớp phủ rất nhẹ ở mép trái để chữ luôn dễ đọc */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--scrim) 0%, transparent 55%);
+}
+@media (max-width: 959px) {
+  .scrim {
+    background: var(--scrim-mobile);
+  }
+}
+
+/* Hai khung hình thoi bo góc rất mờ phía sau nội dung (tĩnh) */
+.frames {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--fs);
+  height: var(--fs);
+  border: 1px solid var(--frame);
+  border-radius: 22%;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.frame--a {
+  --fs: min(86vmin, 640px);
+}
+.frame--b {
+  --fs: min(150vmin, 1120px);
+  opacity: 0.7;
+}
+@media (min-width: 960px) {
+  .frame {
+    /* tâm khung = giữa cột nội dung bên trái */
+    left: calc(clamp(3rem, 8vw, 8rem) + clamp(440px, 42vw, 580px) / 2);
+  }
+}
+
+/* Chuyển theme mượt cho các thành phần UI */
+:root.theme-transition body,
+:root.theme-transition .social,
+:root.theme-transition .social__badge,
+:root.theme-transition .theme-toggle,
+:root.theme-transition .avatar,
+:root.theme-transition .logo,
+:root.theme-transition .eyebrow,
+:root.theme-transition .name,
+:root.theme-transition .nickname,
+:root.theme-transition .title,
+:root.theme-transition .bio,
+:root.theme-transition .slogan,
+:root.theme-transition .location,
+:root.theme-transition .status,
+:root.theme-transition .footer {
+  transition:
+    color 0.6s ease,
+    background-color 0.6s ease,
+    border-color 0.6s ease,
+    box-shadow 0.6s ease !important;
+}

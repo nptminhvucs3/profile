@@ -1,0 +1,192 @@
+/* ==========================================================
+   ANIMATIONS — nhẹ, chậm, không gây xao nhãng
+   ========================================================== */
+
+/* ----------------------------------------------------------
+   INTRO — chỉ bắt đầu khi ảnh nền đã giải mã + font đã tải xong
+   (App.tsx thêm class `is-ready` lên <html>), nên không bị nhảy chữ hay "bật" nền.
+   Chỉ dùng opacity + transform (chạy trên compositor), không dùng blur/filter.
+   ---------------------------------------------------------- */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* giảm tốc rất mượt */
+}
+
+/* Nền: hiện dần bằng một "màn" màu nền mờ đi (rẻ hơn nhiều so với làm mờ cả nhóm
+   nền đang có blend-mode bên trong). */
+.galaxy::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bg-fallback);
+  opacity: 1;
+  transition: opacity 1.3s ease;
+}
+.is-ready .galaxy::after {
+  opacity: 0;
+}
+.scrim,
+.frames,
+.starfield {
+  opacity: 0;
+  transition: opacity 1.3s ease 0.15s;
+}
+.is-ready .scrim,
+.is-ready .frames,
+.is-ready .starfield {
+  opacity: 1;
+}
+
+/* Nội dung: xuất hiện tuần tự, trượt lên nhẹ */
+.reveal {
+  opacity: 0;
+}
+.is-ready .reveal {
+  animation: fade-up 0.85s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 80ms + 200ms);
+}
+.is-ready .avatar-halo.reveal {
+  animation-name: avatar-in;
+  animation-duration: 1.1s;
+}
+
+/* Header / footer hiện dần sau cùng */
+.header,
+.footer {
+  opacity: 0;
+}
+.is-ready .header {
+  animation: fade-in 1s ease 0.1s both;
+}
+.is-ready .footer {
+  animation: fade-in 1s ease 1s both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes avatar-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(143, 196, 174, 0.45);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px rgba(143, 196, 174, 0);
+  }
+}
+
+/* ---------- Nền Galaxy (xem themes.css) — chỉ transform/opacity, không theo chuột ---------- */
+
+/* Camera drift: ảnh trôi + zoom cực chậm (≈ 46px / 150s ở màn 1920) */
+@keyframes galaxy-drift {
+  from {
+    transform: translate3d(-1.2%, -0.8%, 0) scale(1.04);
+  }
+  to {
+    transform: translate3d(1.2%, 0.9%, 0) scale(1.075);
+  }
+}
+
+
+@keyframes core-breathe {
+  from {
+    opacity: 0.18;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 0.5;
+    transform: scale(1.06);
+  }
+}
+@keyframes orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes colon-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes pill-sheen {
+  to {
+    background-position: -30% 0;
+  }
+}
+
+/* Người dùng yêu cầu giảm chuyển động */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal,
+  .is-ready .reveal,
+  .header,
+  .footer,
+  .is-ready .header,
+  .is-ready .footer {
+    opacity: 1;
+    animation: none;
+  }
+  .galaxy::after {
+    opacity: 0;
+    transition: none;
+  }
+  .scrim,
+  .frames,
+  .starfield {
+    opacity: 1;
+    transition: none;
+  }
+  /* Nền Galaxy đứng yên */
+  .galaxy__drift {
+    animation: none;
+    transform: none;
+  }
+  .galaxy__core,
+  .avatar-orbit {
+    display: none !important;
+  }
+  .localtime__colon {
+    animation: none;
+  }
+  .tilt {
+    transform: none !important;
+  }
+}
