@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const URL_ = (import.meta.env.VITE_SUPABASE_URL ?? 'https://tvomdoniqoepiszprfmb.supabase.co').replace(/\/$/, '');
-const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? 'sb_publishable_T1xGMRRcuEl3V9Pc0nw4cA_diIq816F';
+const URL_ = (import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
+const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
 /** Đã cấu hình Supabase chưa (có .env). Chưa → web chạy hoàn toàn bằng file trong src/config như cũ. */
 export const hasSupabase = Boolean(URL_ && KEY);
